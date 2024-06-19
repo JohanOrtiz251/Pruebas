@@ -12,15 +12,14 @@ const Login = ({ darkMode, toggleDarkMode }) => {
     let URL = process.env.REACT_APP_ENVIRONMENT;
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(`${URL}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
+      try {
+        const response = await fetch('http://localhost:3001/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
             const data = await response.json();
             
             if (response.ok) {

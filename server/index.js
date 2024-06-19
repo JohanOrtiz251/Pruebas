@@ -1,26 +1,46 @@
+// index.js
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const mysqlConnection = require('./configBD');
+const mysql = require('mysql2');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
+// MySQL Connection
+const connection = mysql.createConnection({
+  host: 'sql5.freesqldatabase.com',
+  user: 'sql5714336',
+  password: 'mCt3ensGVJ',
+  database: 'sql5714336',
+  port: 3306,
+});
 
+connection.connect((error) => {
+  if (error) {
+    console.error('Error connecting to database:', error.message);
+  } else {
+    console.log('Connected to database successfully');
+  }
+});
+
+// Routes
 app.get('/todos-los-usuarios', (req, res) => {
-  const query = 'SELECT * FROM usuarios'; 
-  mysqlConnection.query(query, (err, rows) => {
+  const query = 'SELECT * FROM usuarios';
+  connection.query(query, (err, rows) => {
     if (err) {
       console.error('Error al obtener usuarios desde MySQL:', err);
       return res.status(500).json({ error: 'Error al obtener usuarios' });
     }
-    res.json(rows); 
+    res.json(rows);
   });
 });
-
 
 app.post('/registro', (req, res) => {
   const { nombres, apellidos, email, password, celular } = req.body;
@@ -28,9 +48,8 @@ app.post('/registro', (req, res) => {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
-  // Implementa la lógica para insertar el nuevo usuario en la base de datos
   const query = 'INSERT INTO usuarios (nombres, apellidos, email, password, celular) VALUES (?, ?, ?, ?, ?)';
-  mysqlConnection.query(query, [nombres, apellidos, email, password, celular], (err, result) => {
+  connection.query(query, [nombres, apellidos, email, password, celular], (err, result) => {
     if (err) {
       console.error('Error al registrar usuario en MySQL:', err);
       return res.status(500).json({ error: 'Error al registrar usuario' });
@@ -39,11 +58,6 @@ app.post('/registro', (req, res) => {
   });
 });
 
-app.get('/', (req, res) => {
-  res.send('¡Bienvenido a la página principal!');
-});
-
-
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -51,9 +65,8 @@ app.post('/login', (req, res) => {
     return res.status(400).json({ error: 'Correo electrónico y contraseña son obligatorios' });
   }
 
-  // Consulta para buscar al usuario por email y contraseña
   const query = 'SELECT * FROM usuarios WHERE email = ? AND password = ?';
-  mysqlConnection.query(query, [email, password], (err, rows) => {
+  connection.query(query, [email, password], (err, rows) => {
     if (err) {
       console.error('Error al buscar usuario en MySQL:', err);
       return res.status(500).json({ error: 'Error al buscar usuario' });
@@ -68,24 +81,9 @@ app.post('/login', (req, res) => {
   });
 });
 
-const mysql = require('mysql2');
-const connection = mysql.createConnection({
-  host: 'sql5.freesqldatabase.com',
-  user: 'sql5714336',
-  password: 'mCt3ensGVJ',
-  database: 'sql5714336',
-  port: 3306,
-});
-connection.connect((error) => {
-  if (!error) {
-    console.log('Conexión exitosa');
-  } else {
-    console.error('Conexión fallida:', error.message);
-  }
-});
-module.exports = connection;
-
-
+// Start server
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
+
+module.exports = app; // Para pruebas unitarias u otras configuraciones
