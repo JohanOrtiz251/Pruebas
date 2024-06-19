@@ -61,10 +61,12 @@ app.post('/registro', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
+  // Verifica que el email y la contraseña estén presentes
   if (!email || !password) {
     return res.status(400).json({ error: 'Correo electrónico y contraseña son obligatorios' });
   }
 
+  // Realiza la consulta en la base de datos para validar el usuario
   const query = 'SELECT * FROM usuarios WHERE email = ? AND password = ?';
   connection.query(query, [email, password], (err, rows) => {
     if (err) {
@@ -72,10 +74,12 @@ app.post('/login', (req, res) => {
       return res.status(500).json({ error: 'Error al buscar usuario' });
     }
 
+    // Si no se encuentra un usuario con las credenciales proporcionadas
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado o contraseña incorrecta' });
     }
 
+    // Si se encuentra el usuario, enviar una respuesta exitosa
     const user = rows[0];
     res.json({ message: 'Inicio de sesión exitoso', user });
   });

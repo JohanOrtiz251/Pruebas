@@ -12,7 +12,7 @@ const Registro = ({ darkMode, toggleDarkMode }) => {
         celular: ''
     });
 
-    let URL = process.env.REACT_APP_ENVIRONMENT;
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
