@@ -108,7 +108,7 @@ module.exports = {
 
 // Esta parte es para registrar e iniciar sesion usando el .json de manera remota
 
-const axios = require('axios');
+/* const axios = require('axios');
 
 const usuariosRegistradosUrl = 'https://api.jsonbin.io/v3/b/664e4495e41b4d34e4f7d7f2';
 const lastUserIdUrl = 'https://api.jsonbin.io/v3/b/664e449cacd3cb34a84c031d';
@@ -232,3 +232,4 @@ module.exports = {
   registrarUsuario,
   iniciarSesion,
 };
+ */
