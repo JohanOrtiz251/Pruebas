@@ -39,6 +39,11 @@ app.post('/registro', (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.send('¡Bienvenido a la página principal!');
+});
+
+
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
