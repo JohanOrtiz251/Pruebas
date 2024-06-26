@@ -1,93 +1,50 @@
-// index.js
-
+// server.js
 const express = require('express');
 const cors = require('cors');
+const { registrarUsuario, iniciarSesion } = require('./controllers/userController');
 const bodyParser = require('body-parser');
-const mysql = require('mysql2');
+const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// MySQL Connection
-const connection = mysql.createConnection({
-  host: 'sql5.freesqldatabase.com',
-  user: 'sql5714336',
-  password: 'mCt3ensGVJ',
-  database: 'sql5714336',
-  port: 3306,
-});
+app.post('/registro', registrarUsuario);
+app.post('/login', iniciarSesion);
 
-connection.connect((error) => {
-  if (error) {
-    console.error('Error connecting to database:', error.message);
-  } else {
-    console.log('Connected to database successfully');
-  }
-});
-
-// Routes
-app.get('/todos-los-usuarios', (req, res) => {
-  const query = 'SELECT * FROM usuarios';
-  connection.query(query, (err, rows) => {
-    if (err) {
-      console.error('Error al obtener usuarios desde MySQL:', err);
-      return res.status(500).json({ error: 'Error al obtener usuarios' });
+app.get("/", (req, res) => {
+  let config = {
+    method: "GET",
+    maxBodyLength: Infinity,
+    url: 'https://api.jsonbin.io/v3/b/664e4495e41b4d34e4f7d7f2',
+    headers: {
+      'Content-Type': 'application/json',
+      "X-Master-Key": "$2a$10$/mcvIEltjOIKAA3.1TkrE.D1nJgzbo5AigxCM0BKZOSh5HXm2.9o2"
     }
-    res.json(rows);
-  });
+  };
+
+  axios(config)
+    .then(result => {
+      res.send(result.data.record);
+    })
+    .catch(error => {
+      console.error('Error fetching data from JSONBin:', error);
+      res.status(500).send('Error fetching data');
+    });
 });
 
-app.post('/registro', (req, res) => {
-  const { nombres, apellidos, email, password, celular } = req.body;
-  if (!nombres || !apellidos || !email || !password || !celular) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-  }
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'build')));
 
-  const query = 'INSERT INTO usuarios (nombres, apellidos, email, password, celular) VALUES (?, ?, ?, ?, ?)';
-  connection.query(query, [nombres, apellidos, email, password, celular], (err, result) => {
-    if (err) {
-      console.error('Error al registrar usuario en MySQL:', err);
-      return res.status(500).json({ error: 'Error al registrar usuario' });
-    }
-    res.status(201).json({ message: 'Usuario registrado con éxito' });
-  });
+// Handle any other requests by returning the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-
-  // Verifica que el email y la contraseña estén presentes
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Correo electrónico y contraseña son obligatorios' });
-  }
-
-  // Realiza la consulta en la base de datos para validar el usuario
-  const query = 'SELECT * FROM usuarios WHERE email = ? AND password = ?';
-  connection.query(query, [email, password], (err, rows) => {
-    if (err) {
-      console.error('Error al buscar usuario en MySQL:', err);
-      return res.status(500).json({ error: 'Error al buscar usuario' });
-    }
-
-    // Si no se encuentra un usuario con las credenciales proporcionadas
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado o contraseña incorrecta' });
-    }
-
-    // Si se encuentra el usuario, enviar una respuesta exitosa
-    const user = rows[0];
-    res.json({ message: 'Inicio de sesión exitoso', user });
-  });
-});
-
-// Start server
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
-
-module.exports = app; // Para pruebas unitarias u otras configuraciones
