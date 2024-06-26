@@ -1,11 +1,12 @@
+// configBD.js
 const mysql = require('mysql2');
 
 const connection = mysql.createConnection({
-  host: 'sql5.freemysqlhosting.net',
-  user: 'sql5716359',
-  password: 'CDK15YJZTA',
-  database: 'sql5716359',
-  port: 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
 });
 
 connection.connect((error) => {
@@ -13,6 +14,7 @@ connection.connect((error) => {
     console.log('Conexión exitosa a la base de datos');
   } else {
     console.error('Error en la conexión a la base de datos:', error.message);
+    console.error('Detalle del error:', error);
   }
 });
 
